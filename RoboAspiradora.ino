@@ -30,31 +30,27 @@ const long CUENTAS_GIRO_90 = 436;
 const long CUENTAS_CAMBIO_CARRIL = 555;
 
 bool siguienteGiroIzquierda = false;
-
 RobotContext* robotContext = new RobotContext();
-BluetoothClient* bluetoothClient = new BluetoothClient(
-  robotContext,
-  DEVICE_NAME,
-  SERVICE_UUID,
-  CHARACTERISTIC_UUID
-);
-MotorHandler* motorHandler = new MotorHandler(
-  IN1,
-  IN2,
-  IN3,
-  IN4,
-  ENC_IZQ_A,
-  ENC_IZQ_B,
-  ENC_DER_A,
-  ENC_DER_B,
-  CUENTAS_GIRO_90,
-  CUENTAS_CAMBIO_CARRIL
-);
-
 Robot* robot = new Robot(
   robotContext,
-  bluetoothClient,
-  motorHandler,
+  new BluetoothClient(
+    robotContext,
+    DEVICE_NAME,
+    SERVICE_UUID,
+    CHARACTERISTIC_UUID
+  ),
+  new MotorHandler(
+    IN1,
+    IN2,
+    IN3,
+    IN4,
+    ENC_IZQ_A,
+    ENC_IZQ_B,
+    ENC_DER_A,
+    ENC_DER_B,
+    CUENTAS_GIRO_90,
+    CUENTAS_CAMBIO_CARRIL
+  ),
   bumper,
   powerButton,
   bobina
@@ -70,33 +66,34 @@ void setup() {
   Logger::info("============================\n");
   Logger::info("INICIANDO ROBOT\n");
   Logger::info("============================\n");
+  
+  MotorHandler* motorHandler = robot->getMotorHandler();
+  pinMode(motorHandler->getIN1Pin(), OUTPUT);
+  pinMode(motorHandler->getIN2Pin(), OUTPUT);
+  pinMode(motorHandler->getIN3Pin(), OUTPUT);
+  pinMode(motorHandler->getIN4Pin(), OUTPUT);
 
-  pinMode(robot->getMotorHandler()->getIN1Pin(), OUTPUT);
-  pinMode(robot->getMotorHandler()->getIN2Pin(), OUTPUT);
-  pinMode(robot->getMotorHandler()->getIN3Pin(), OUTPUT);
-  pinMode(robot->getMotorHandler()->getIN4Pin(), OUTPUT);
-
-  robot->getMotorHandler()->detener();
+  motorHandler->detener();
 
 
-  pinMode(robot->getMotorHandler()->getENC_IZQ_APin(), INPUT_PULLUP);
-  pinMode(robot->getMotorHandler()->getENC_IZQ_BPin(), INPUT_PULLUP);
+  pinMode(motorHandler->getENC_IZQ_APin(), INPUT_PULLUP);
+  pinMode(motorHandler->getENC_IZQ_BPin(), INPUT_PULLUP);
 
-  pinMode(robot->getMotorHandler()->getENC_DER_APin(), INPUT_PULLUP);
-  pinMode(robot->getMotorHandler()->getENC_DER_BPin(), INPUT_PULLUP);
+  pinMode(motorHandler->getENC_DER_APin(), INPUT_PULLUP);
+  pinMode(motorHandler->getENC_DER_BPin(), INPUT_PULLUP);
 
   pinMode(robot->getVacuumPin(), OUTPUT);
   pinMode(robot->getBumperButton(), INPUT_PULLUP);
   pinMode(robot->getonOffButton(), INPUT_PULLUP);
 
   attachInterrupt(
-    digitalPinToInterrupt(robot->getMotorHandler()->getENC_IZQ_APin()),
-    robot->getMotorHandler()->encoderIzquierdoISR,
+    digitalPinToInterrupt(motorHandler->getENC_IZQ_APin()),
+    motorHandler->encoderIzquierdoISR,
     RISING);
 
   attachInterrupt(
-    digitalPinToInterrupt(robot->getMotorHandler()->getENC_DER_APin()),
-    robot->getMotorHandler()->encoderDerechoISR,
+    digitalPinToInterrupt(motorHandler->getENC_DER_APin()),
+    motorHandler->encoderDerechoISR,
     RISING);
   
   attachInterrupt(
@@ -115,29 +112,28 @@ void setup() {
 
 
 void loop() {
+  MotorHandler* motorHandler = robot->getMotorHandler();
   robot->setVacuumState();
   if(robot->getContext()->getState() == RobotState::ON){
-    do{
-      robot->getMotorHandler()->avanzar();
-    } while(!digitalRead(robot->getBumperButton()));
+      while(digitalRead(robot->getBumperButton()) == HIGH){
+        motorHandler->avanzar();
+      }
       robot->handleButton(robot->getBumperButton());
-      robot->getMotorHandler()->detener();
-
+      motorHandler->detener();
       Logger::info("\n***** PARED DETECTADA *****\n");
-
       if (siguienteGiroIzquierda == false) {
-        robot->getMotorHandler()->cambioCarrilDerecha();
+        motorHandler->cambioCarrilDerecha();
         siguienteGiroIzquierda = true;
       }
 
       else {
-        robot->getMotorHandler()->cambioCarrilIzquierda();
+        motorHandler->cambioCarrilIzquierda();
         siguienteGiroIzquierda = false;
       }
       Logger::info("Continuando siguiente pasada...\n");
       delay(500);
   }
   else{
-    robot->getMotorHandler()->detener();
+    motorHandler->detener();
   }
 }
