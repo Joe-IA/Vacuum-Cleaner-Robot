@@ -68,6 +68,7 @@ void setup() {
   Logger::info("============================\n");
   
   MotorHandler* motorHandler = robot->getMotorHandler();
+  BluetoothClient* bluetoothClient = robot->getBluetoothClient();
   pinMode(motorHandler->getIN1Pin(), OUTPUT);
   pinMode(motorHandler->getIN2Pin(), OUTPUT);
   pinMode(motorHandler->getIN3Pin(), OUTPUT);
@@ -101,6 +102,7 @@ void setup() {
     robot->onOffButtonHandleISR,
     FALLING
   );
+  bluetoothClient->initializeBluetooth();
 
   Logger::info("Encoders OK\n");
   Logger::info("L298N configurado\n");

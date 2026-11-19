@@ -68,3 +68,7 @@ void Robot::onOffButtonHandleISR(){
   if(Robot::instance != nullptr)
     Robot::instance->onOffButtonHandle();
 }
+
+BluetoothClient* Robot::getBluetoothClient(){
+  return this->btClient;
+}

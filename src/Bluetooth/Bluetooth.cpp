@@ -14,7 +14,6 @@ BluetoothClient::BluetoothClient(RobotContext* robotContext,
   this->serviceUUID = serviceUUID;
   this->characteristicUUID = characteristicUUID;
   this->robotContext = robotContext;
-  this->initializeBluetooth();
 }
 
 void BluetoothClient::initializeBluetooth() {

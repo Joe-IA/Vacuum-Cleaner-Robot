@@ -32,6 +32,7 @@ class Robot {
     void IRAM_ATTR onOffButtonHandle();
     MotorHandler* getMotorHandler();
     RobotContext* getContext();
+    BluetoothClient* getBluetoothClient();
 
 };
 
